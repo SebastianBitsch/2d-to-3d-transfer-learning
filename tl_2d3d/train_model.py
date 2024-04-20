@@ -1,8 +1,11 @@
+import time
+import logging
+from itertools import chain
+
 import torch
 import wandb
 import hydra
-import logging
-from itertools import chain
+import monai
 
 from omegaconf import DictConfig
 from hydra.utils import to_absolute_path
@@ -10,29 +13,16 @@ from torch.utils.data import DataLoader, random_split
 from torchvision import transforms
 from torchvision.utils import make_grid
 
-import monai
 from monai.data import DataLoader, Dataset
 from monai.transforms.utils import allow_missing_keys_mode
 from monai.transforms import BatchInverseTransform
 from monai.networks.nets import DynUNet
 
+from tl_2d3d.utils import get_device
 
 @hydra.main(version_base="1.2", config_path="conf", config_name="config")
 def train(config: DictConfig) -> None:
-    device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
-    print(f"Training on {device}")
-
-    wandb.init(
-        project = config.wandb.project_name,
-        config = {
-            "architecture": model.name,
-            "dataset": "Custom-1",
-            "learning_rate": config.hyperparameters.learning_rate,
-            "epochs": config.hyperparameters.epochs,
-            "batch_size" : config.hyperparameters.batch_size,
-        },
-        mode = config.wandb.mode
-    )
+    device = get_device()
 
     model = ...
 
@@ -42,23 +32,28 @@ def train(config: DictConfig) -> None:
     optimizer = torch.optim.Adam(model.parameters(), lr = config.hyperparameters.learning_rate)
     inferer = monai.inferers.SliceInferer(roi_size=[-1, -1], spatial_dim=2, sw_batch_size=1)
 
-
     wandb.init(
         project = config.wandb.project_name,
         config = {
             "architecture": model.name,
+            "optimizer" : optimizer.__class__.__name__,
+            "loss_fn" : loss_fn.__class__.__name__,
+            "inferer" : inferer.__class__.__name__,
             "dataset": "KiTS",
             "learning_rate": config.hyperparameters.learning_rate,
+            "max_iterations": config.hyperparameters.max_iterations,
             "epochs": config.hyperparameters.epochs,
             "batch_size" : config.hyperparameters.batch_size,
         },
         mode = config.wandb.mode
     )
 
-    iterations = 0
-    for epoch in range(config.hyperparameters.epochs):
-        print(f"**** Epoch {epoch+1}/{config.hyperparameters.epochs} ****")
+    iteration_num = 0
+    total_training_time = 0
+    for epoch_num in range(config.hyperparameters.epochs):
+        print(f"**** Epoch {epoch_num+1}/{config.hyperparameters.epochs} | Iterations {iteration_num + 1}/{config.hyperparameters.max_num_iterations}****")
 
+        epoch_start_time = time.time()
         training_loss = 0.0
         validation_loss = 0.0
 
@@ -78,19 +73,23 @@ def train(config: DictConfig) -> None:
             
             training_loss += loss
 
-            if (iterations % config.wandb.train_log_interval == config.wandb.train_log_interval - 1):
+            if (iteration_num % config.wandb.train_log_interval == config.wandb.train_log_interval - 1):
                 print(f"{batch_num + 1}/{len(train_dataloader)} | loss: {loss:.3f}")
                 wandb.log({
-                    "epoch" : epoch,
-                    "iteration" : iterations,
+                    "epoch" : epoch_num,
+                    "iteration" : iteration_num,
                     "batch/train" : batch_num,
                     "loss/train"  : training_loss.item() / (batch_num + 1),
                 })
             
-            iterations += 1
+            iteration_num += 1
 
-
+        total_training_time += time.time() - epoch_start_time
         
+        # Check for termination criteria
+        if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
+            break
+
         # Validate
         model.eval()
         for batch_num, batch in enumerate(val_dataloader):
@@ -105,12 +104,15 @@ def train(config: DictConfig) -> None:
             if (batch_num % config.wandb.validation_log_interval == config.wandb.validation_log_interval - 1):
                 print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {loss.item():.3f}")
                 wandb.log({
-                    "epoch" : epoch,
+                    "epoch" : epoch_num,
                     "batch/val" : batch_num,
                     "loss/val": validation_loss.item() / (batch_num + 1),
                 })
 
 
+        # Check for termination criteria
+        if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
+            break
         
         # Logging
     wandb.finish()
