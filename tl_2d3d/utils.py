@@ -5,6 +5,14 @@ import monai
 import numpy as np
 
 
+def get_device(verbose: bool = True) -> str:
+    """ TODO: Should probably be more complex for multiple GPUs etc. """
+    device = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+    if verbose:
+        print(f"Training on {device}")
+    return device
+
+
 def set_seed(seed: int) -> None:
     """ Set the seed for determinism """ 
     torch.manual_seed(seed)
