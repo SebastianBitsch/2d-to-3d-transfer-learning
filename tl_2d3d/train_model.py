@@ -122,3 +122,7 @@ def train(config: DictConfig) -> None:
         
         # Logging
     wandb.finish()
+
+
+if __name__ == "__main__":
+    train()
