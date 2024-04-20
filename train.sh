@@ -42,6 +42,7 @@ nvidia-smi
 conda activate env-02510
 
 # Set the default config to use. kinda hacky ngl
-config_name="${config_name:='config.yaml'}"
+config_name="${config_name:=config}"
 
-python3 tl_2d3d/train_model.py -cd tl_2d3d/conf/experiments --config-name=$config_name
+# -cd tl_2d3d/conf 
+python3 tl_2d3d/train_model.py --config-name=$config_name
