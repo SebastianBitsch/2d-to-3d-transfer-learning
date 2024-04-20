@@ -1,8 +1,5 @@
-defaults:
-  - override hydra/job_logging: custom
-
 base:
-  exp_name: base
+  experiment_name: base # Should be overwriten in exp files
 
 data:
   images_dir_path: data/raw/images
@@ -25,7 +22,7 @@ hyperparameters:
 
 
 wandb:
-  mode: online # "disabled" or "online" or "offline"
+  mode: disabled # "disabled" or "online" or "offline"
   team_name: deeplearning_3d
   project_name: tennis-court-tracking
   train_log_interval: 100

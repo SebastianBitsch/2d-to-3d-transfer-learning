@@ -1,0 +1,5 @@
+base:
+  exp_name: baseline2d
+
+wandb:
+  mode: online
