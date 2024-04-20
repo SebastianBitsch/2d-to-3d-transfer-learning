@@ -18,22 +18,28 @@ from monai.transforms.utils import allow_missing_keys_mode
 from monai.transforms import BatchInverseTransform
 from monai.networks.nets import DynUNet
 
-from tl_2d3d.utils import get_device
+from tl_2d3d.data.make_dataset import make_dataloaders
+from tl_2d3d.utils import get_device, set_seed
+from tl_2d3d.models.model import make_model
 
 @hydra.main(version_base="1.2", config_path="conf", config_name="config")
 def train(config: DictConfig) -> None:
+    set_seed(seed = config.hyperparameters.seed)
     device = get_device()
 
-    model = ...
+    # Make model and dataloders
+    model = make_model(config, device = device)
+    train_dataloader, val_dataloader, test_dataloader = make_dataloaders(config)
 
-    train_dataloader, val_dataloader, test_dataloader = ...
-
+    # 
     loss_fn = monai.losses.DiceLoss(softmax=True, to_onehot_y=False) # Apply "softmax" to the output of the network and don't convert to onehot because this is done already by the transforms.
     optimizer = torch.optim.Adam(model.parameters(), lr = config.hyperparameters.learning_rate)
     inferer = monai.inferers.SliceInferer(roi_size=[-1, -1], spatial_dim=2, sw_batch_size=1)
 
+    # Initialize logging
     wandb.init(
         project = config.wandb.project_name,
+        entity = config.wandb.team_name,
         config = {
             "architecture": model.name,
             "optimizer" : optimizer.__class__.__name__,

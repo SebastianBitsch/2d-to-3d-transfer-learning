@@ -71,8 +71,6 @@ def read_kits_data(dataset_path: str = "/dtu/3d-imaging-center/courses/02510/dat
     ]
 
 
-def make_dataloaders():
-    pass
 
 if __name__ == '__main__':
     # Get the data and process it
