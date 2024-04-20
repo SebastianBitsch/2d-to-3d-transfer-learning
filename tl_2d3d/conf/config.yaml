@@ -2,8 +2,10 @@ base:
   experiment_name: base # Should be overwriten in exp files
 
 data:
-  images_dir_path: data/raw/images
-  annotations_file_path: data/raw/data_train.json
+  dataset_name: kits # only kits and adc supported
+  dataset_path: /dtu/3d-imaging-center/courses/02510/data/KiTS19
+  image_dims: [256, 256,-1] # what size should the images/volumes be resized to
+  voxel_dims: [1.464845, 1.464845, 10.0] # what size should the voxels be resized to. this value is found in a notebook beforehand
   image_width: 640
   image_height: 360
 
