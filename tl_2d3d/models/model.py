@@ -1,26 +1,15 @@
-import torch
+import torch.nn as nn
+from monai.networks.nets import DynUNet
+from omegaconf import DictConfig
 
-class MyNeuralNet(torch.nn.Module):
-    """ Basic neural network class. 
-    
-    Args:
-        in_features: number of input features
-        out_features: number of output features
-    
-    """
-    def __init__(self, in_features: int, out_features: int) -> None:
-        self.l1 = torch.nn.Linear(in_features, 500)
-        self.l2 = torch.nn.Linear(500, out_features)
-        self.r = torch.nn.ReLU()
-    
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward pass of the model.
-        
-        Args:
-            x: input tensor expected to be of shape [N,in_features]
+def make_model(config: DictConfig, device: str) -> nn.Module:
+    model = DynUNet(
+        spatial_dims = 2,   # 2 for 2D convolutions, 3 for 3D convolutions
+        in_channels  = 1,   # Number of input channels/modalities (3 for RGB)
+        out_channels = 4,   # Number of classes, including background
+        kernel_size  = [3, 3, 3, 3, 3, 3], # Size of the filters
+        strides      = [1, 2, 2, 2, 2, 2],
+        upsample_kernel_size = [2, 2, 2, 2, 2]
+    )
 
-        Returns:
-            Output tensor with shape [N,out_features]
-
-        """
-        return self.l2(self.r(self.l1(x)))
+    return model.to(device)
