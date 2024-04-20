@@ -1,0 +1,32 @@
+defaults:
+  - override hydra/job_logging: custom
+
+base:
+  exp_name: base
+
+data:
+  images_dir_path: data/raw/images
+  annotations_file_path: data/raw/data_train.json
+  image_width: 640
+  image_height: 360
+
+  pct_train_split: 0.7 
+  pct_val_split  : 0.2
+  pct_test_split : 0.1
+
+hyperparameters:
+  path_to_weights: ~  # if not None will continue training from these weights. path to the weights, should be in the /models/ dir
+  seed: 1312
+  batch_size: 2
+  epochs: 5
+  learning_rate: 1e-5
+  max_iterations: 10_000 # how many iterations to run / stop at (if n epochs and max time is large enough)
+  max_training_time: 3600 # in seconds, how long to train for (if max_iterations and n epochs is large enough)
+
+
+wandb:
+  mode: online # "disabled" or "online" or "offline"
+  team_name: deeplearning_3d
+  project_name: tennis-court-tracking
+  train_log_interval: 100
+  validation_log_interval: 50
