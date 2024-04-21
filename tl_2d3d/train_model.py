@@ -117,12 +117,14 @@ def train(config: DictConfig) -> None:
                 y_pred = model(x)
                 loss = loss_fn(y_pred, y)
                 validation_loss += loss
-
+                
                 dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
-                hd95_score += metric.binary.hd95(y_pred.argmax(dim=1), y.argmax(dim=1), voxelspacing = config.data.voxel_dims) # Not elegant, but ok
+                # Apparently hd breaks if all predictions are 0 - safeguard against that (why doesnt medpy handle it..)
+                if torch.count_nonzero(y_pred.argmax(dim=1)) and torch.count_nonzero(y.argmax(dim=1)):
+                    hd95_score += metric.binary.hd95(y_pred.argmax(dim=1), y.argmax(dim=1), voxelspacing = config.data.voxel_dims) # Not elegant, but ok
 
             if (batch_num % config.wandb.validation_log_interval == 0 and 0 < batch_num):
-                print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {validation_loss.item() / (batch_num + 1):.3f} | dice: {dice_score / (batch_num + 1):.3f}")
+                print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {validation_loss.item() / (batch_num + 1):.3f} | dice: {dice_score / (batch_num + 1):.3f} | hd95: {hd95_score / (batch_num + 1):.3f}")
                 wandb.log({
                     "epoch" : epoch_num,
                     "batch/val" : batch_num,
