@@ -81,6 +81,7 @@ def train(config: DictConfig) -> None:
             
             training_loss += loss
 
+            # Log to W&B
             if (iteration_num % config.wandb.train_log_interval == config.wandb.train_log_interval - 1):
                 print(f"{batch_num + 1}/{len(train_dataloader)} | loss: {loss:.3f}")
                 wandb.log({
@@ -89,14 +90,20 @@ def train(config: DictConfig) -> None:
                     "batch/train" : batch_num,
                     "loss/train"  : training_loss.item() / (batch_num + 1),
                 })
-            
-            iteration_num += 1
 
-        total_training_time += time.time() - epoch_start_time
+            # Save model state dict
+            if (iteration_num % config.base.save_interval == config.base.save_interval - 1):
+                file_path = f"{config.base.save_location}/{config.base.experiment_name}_{iteration_num}iters.pt"
+                print(f"Saving model to {file_path}")
+                torch.save(model.state_dict(), file_path)
+            
+            # Check for termination criteria
+            if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
+                break
+
+            iteration_num += 1
         
-        # Check for termination criteria
-        if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
-            break
+        total_training_time += time.time() - epoch_start_time
 
         # Validate
         model.eval()
@@ -109,7 +116,6 @@ def train(config: DictConfig) -> None:
                 loss = loss_fn(y_pred, y)
                 validation_loss += loss
 
-                print(y_pred.shape, y.shape)
                 dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
 
             if (batch_num % config.wandb.validation_log_interval == config.wandb.validation_log_interval - 1):

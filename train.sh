@@ -23,7 +23,7 @@
 #BSUB -R "span[hosts=1]"
 
 ### -- specify that we need X GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=1GB]"
+#BSUB -R "rusage[mem=2GB]"
 
 ### -- set walltime limit: hh:mm --
 #BSUB -W 24:00
@@ -35,7 +35,7 @@
 ### -- send notification at completion--
 ##BSUB -N
 
-nvidia-smi 
+# Run with bsub < train.sh -env "config_name=baseline2d"
 
 # Setup env
 source .env/bin/activate

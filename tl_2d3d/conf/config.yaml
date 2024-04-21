@@ -1,5 +1,7 @@
 base:
   experiment_name: base # Should be overwriten in exp files
+  save_interval: 1000 # how often should the weights of the model be saved
+  save_location: /work3/s204163/3dimaging_finalproject/weights/ # will be saved as {experiment_name}_{n_iterations}
 
 data:
   dataset_name: kits # only kits and adc supported
@@ -17,7 +19,7 @@ data:
 hyperparameters:
   path_to_weights: ~  # if not None will continue training from these weights. path to the weights, should be in the /models/ dir
   seed: 1312
-  batch_size: 2
+  batch_size: 4
   epochs: 200
   learning_rate: 1e-3
   max_num_iterations: 10_000 # how many iterations to run / stop at (if n epochs and max time is large enough)

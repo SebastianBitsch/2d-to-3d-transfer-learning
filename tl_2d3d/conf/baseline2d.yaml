@@ -1,5 +1,6 @@
 base:
-  exp_name: baseline2d
+  experiment_name: baseline2d
 
 wandb:
   mode: online
+  run_name: baseline2d
