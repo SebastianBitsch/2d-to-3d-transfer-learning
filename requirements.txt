@@ -1,5 +1,9 @@
-torch >= 2.1.0
+torch
+torchvision
 monai
-hydra
+hydra-core
 wandb
 omegaconf
+matplotlib
+numpy
+nibabel
