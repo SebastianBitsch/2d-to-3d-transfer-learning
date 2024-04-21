@@ -29,9 +29,9 @@ def train(config: DictConfig) -> None:
     set_seed(seed = config.hyperparameters.seed)
     device = get_device()
 
-    # Make model and dataloders
+    # Make model and dataloders - we specify to use either dataset A or B for pretraining and finetuning
     model = make_model(config, device = device)
-    train_dataloader, val_dataloader, test_dataloader = make_dataloaders(config)
+    train_dataloader, val_dataloader, test_dataloader = make_dataloaders(config, use_dataset_a=config.base.use_dataset_a)
 
     # 
     loss_fn = monai.losses.DiceLoss(softmax=True, to_onehot_y=False) # Apply "softmax" to the output of the network and don't convert to onehot because this is done already by the transforms.

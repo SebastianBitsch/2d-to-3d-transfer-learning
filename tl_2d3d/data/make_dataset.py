@@ -5,8 +5,12 @@ from torch.utils.data import random_split
 from omegaconf import DictConfig
 import monai
 
-def make_dataloaders(config: DictConfig) -> tuple[DataLoader]:
-    """ Create train,val,test dataloader """
+def make_dataloaders(config: DictConfig, use_dataset_a: bool) -> tuple[DataLoader]:
+    """
+    Create train,val,test dataloader. 
+    The dataset is split into a set A and B and a test set. 'use_dataset_a' bool gives either set 'a' or 'b'
+    The a or b set is then split into train and val set.
+    """
 
     transforms = monai.transforms.Compose([
         monai.transforms.LoadImaged(keys=['image', 'label']),
@@ -28,14 +32,19 @@ def make_dataloaders(config: DictConfig) -> tuple[DataLoader]:
         data = read_dataset(dataset_name=config.data.dataset_name, path=config.data.dataset_path), 
         transform = transforms
     )
-    train_dataset, val_dataset, test_dataset = random_split(
-        full_dataset, 
-        lengths = [config.data.pct_train_split, config.data.pct_val_split, config.data.pct_test_split]
-    )
 
-    train_dataloader = DataLoader(train_dataset,batch_size = config.hyperparameters.batch_size, shuffle = True)
-    val_dataloader   = DataLoader(val_dataset,  batch_size = 1, shuffle = False) 
-    test_dataloader  = DataLoader(test_dataset, batch_size = 1, shuffle = False) 
+    # Split the dataset into A and B datasets
+    ab_dataset_size = 0.5 * (1.0 - config.data.pct_test_split)
+    a_dataset, b_dataset, test_dataset = random_split(full_dataset, lengths = [ab_dataset_size, ab_dataset_size, config.data.pct_test_split])
+    main_dataset = a_dataset if use_dataset_a else b_dataset
+
+    # Train/Val split
+    train_dataset, val_dataset = random_split(main_dataset, lengths = [config.data.pct_train_split, config.data.pct_val_split])
+
+    # Dataloaders
+    train_dataloader = DataLoader(train_dataset, batch_size = config.hyperparameters.batch_size, shuffle = True)
+    val_dataloader   = DataLoader(val_dataset,   batch_size = 1, shuffle = False) 
+    test_dataloader  = DataLoader(test_dataset,  batch_size = 1, shuffle = False) 
 
     return train_dataloader, val_dataloader, test_dataloader
 
