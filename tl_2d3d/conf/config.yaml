@@ -24,8 +24,9 @@ hyperparameters:
 
 
 wandb:
-  mode: disabled # "disabled" or "online" or "offline"
+  mode: online # "disabled" or "online" or "offline"
   team_name: deeplearning_3d
-  project_name: tennis-court-tracking
-  train_log_interval: 100
-  validation_log_interval: 50
+  project_name: transfer-learning-2d-3d
+  run_name: ~ # Set this per experiment to name the run something nice. if not set it will give some shitty name like vibrant-meadow
+  train_log_interval: 10
+  validation_log_interval: 5

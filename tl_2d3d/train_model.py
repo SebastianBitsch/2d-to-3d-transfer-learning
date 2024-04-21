@@ -40,6 +40,7 @@ def train(config: DictConfig) -> None:
     wandb.init(
         project = config.wandb.project_name,
         entity = config.wandb.team_name,
+        name = config.wandb.run_name,
         config = {
             "architecture": model.__class__.__name__,
             "optimizer" : optimizer.__class__.__name__,
@@ -98,8 +99,8 @@ def train(config: DictConfig) -> None:
         # Validate
         model.eval()
         for batch_num, batch in enumerate(val_dataloader):
-            x = batch['image'].to(device)
-            y = batch['label'].to(device)
+            x = batch['image'].to(device).squeeze(dim = -1) # TODO: This squeeze has to be here because monai.transforms.SqueezeDimd gives error
+            y = batch['label'].to(device).squeeze(dim = -1) # TODO: This squeeze has to be here because monai.transforms.SqueezeDimd gives error
 
             with torch.no_grad():
                 y_pred = model(x)
