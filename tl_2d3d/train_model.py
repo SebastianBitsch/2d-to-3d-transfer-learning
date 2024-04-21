@@ -17,6 +17,7 @@ from monai.data import DataLoader, Dataset
 from monai.transforms.utils import allow_missing_keys_mode
 from monai.transforms import BatchInverseTransform
 from monai.networks.nets import DynUNet
+import medpy.metric as metric
 
 from tl_2d3d.data.make_dataset import make_dataloaders
 from tl_2d3d.utils import get_device, set_seed
@@ -63,6 +64,7 @@ def train(config: DictConfig) -> None:
         epoch_start_time = time.time()
         training_loss = 0.0
         validation_loss = 0.0
+        dice_score = 0.0
 
         # Train
         model.train()
@@ -107,12 +109,16 @@ def train(config: DictConfig) -> None:
                 loss = loss_fn(y_pred, y)
                 validation_loss += loss
 
+                print(y_pred.shape, y.shape)
+                dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
+
             if (batch_num % config.wandb.validation_log_interval == config.wandb.validation_log_interval - 1):
-                print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {loss.item():.3f}")
+                print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {validation_loss.item() / (batch_num + 1):.3f} | dice: {dice_score / (batch_num + 1):.3f}")
                 wandb.log({
                     "epoch" : epoch_num,
                     "batch/val" : batch_num,
                     "loss/val": validation_loss.item() / (batch_num + 1),
+                    "score/dice": dice_score / (batch_num + 1),
                 })
 
 

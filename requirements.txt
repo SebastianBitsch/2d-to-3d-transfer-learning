@@ -7,3 +7,4 @@ omegaconf
 matplotlib
 numpy
 nibabel
+medpy
