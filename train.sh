@@ -6,8 +6,8 @@
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
 
-#BSUB -o train_%J.out
-#BSUB -e train_%J.err
+#BSUB -o logs/train_%J.out
+#BSUB -e logs/train_%J.err
 # -- end of LSF options --
 
 ### -- specify queue -- 
