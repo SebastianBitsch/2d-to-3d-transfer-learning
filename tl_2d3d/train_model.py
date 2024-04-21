@@ -66,6 +66,7 @@ def train(config: DictConfig) -> None:
         training_loss = 0.0
         validation_loss = 0.0
         dice_score = 0.0
+        hd95_score = 0.0
 
         # Train
         model.train()
@@ -118,6 +119,7 @@ def train(config: DictConfig) -> None:
                 validation_loss += loss
 
                 dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
+                hd95_score += metric.binary.hd95(y_pred.argmax(dim=1), y.argmax(dim=1), voxelspacing = config.data.voxel_dims) # Not elegant, but ok
 
             if (batch_num % config.wandb.validation_log_interval == 0 and 0 < batch_num):
                 print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {validation_loss.item() / (batch_num + 1):.3f} | dice: {dice_score / (batch_num + 1):.3f}")
@@ -126,14 +128,19 @@ def train(config: DictConfig) -> None:
                     "batch/val" : batch_num,
                     "loss/val": validation_loss.item() / (batch_num + 1),
                     "score/dice": dice_score / (batch_num + 1),
+                    "score/hd95": hd95_score / (batch_num + 1)
                 })
 
 
         # Check for termination criteria
         if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
             break
-        
-        # Logging
+    
+    # Save the final model - could be cleaner
+    file_path = f"{config.base.save_location}/{config.base.experiment_name}_{iteration_num}iters.pt"
+    print(f"Saving -final- model to {file_path}")
+    torch.save(model.state_dict(), file_path)
+
     wandb.finish()
 
 
