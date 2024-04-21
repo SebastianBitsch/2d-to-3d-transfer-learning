@@ -16,9 +16,12 @@ def make_dataloaders(config: DictConfig) -> tuple[DataLoader]:
         monai.transforms.RandSpatialCropd(keys=['image', 'label'], roi_size=[-1, -1, 1]),
         # monai.transforms.SqueezeDimd(keys=['image', 'label'], dim=-1), # TODO: This doesn't work for some reason idk why, should investigate
 
-        # TODO: (Light) data augmentation
+        # TODO: (Light) data augmentation - and check they look ok
+        monai.transforms.RandRotated(keys=['image', 'label'], range_z = 180, prob = 0.5, mode='nearest'),
+        monai.transforms.RandGaussianSmoothd(keys=['image'], sigma_x=(0.25, 1.5), sigma_y=(0.25, 1.5), sigma_z=(0.25, 1.5), approx='erf', prob=0.5),
+        monai.transforms.RandGaussianNoised(keys=['image'], prob=0.5, mean=0.0, std=0.5),
 
-        monai.transforms.AsDiscreted(keys=['label'], to_onehot=2) # Convert "label" to onehot encoded.
+        monai.transforms.AsDiscreted(keys=['label'], to_onehot=config.data.n_classes)
     ])
 
     full_dataset = Dataset(
