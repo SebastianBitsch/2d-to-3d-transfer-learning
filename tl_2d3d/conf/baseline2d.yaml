@@ -1,6 +1,6 @@
 defaults:
-  - _self_
   - config
+  - _self_
 
 base:
   experiment_name: baseline2d

@@ -25,6 +25,7 @@ from tl_2d3d.models.model import make_model
 
 @hydra.main(version_base="1.2", config_path="conf", config_name="config")
 def train(config: DictConfig) -> None:
+    print(f"Runnning {config.base.experiment_name}")
     set_seed(seed = config.hyperparameters.seed)
     device = get_device()
 
@@ -82,8 +83,8 @@ def train(config: DictConfig) -> None:
             training_loss += loss
 
             # Log to W&B
-            if (iteration_num % config.wandb.train_log_interval == config.wandb.train_log_interval - 1):
-                print(f"{batch_num + 1}/{len(train_dataloader)} | loss: {loss:.3f}")
+            if (iteration_num % config.wandb.train_log_interval == 0 and 0 < iteration_num):
+                print(f"Iter: {iteration_num}\t| loss: {loss:.3f}")
                 wandb.log({
                     "epoch" : epoch_num,
                     "iteration" : iteration_num,
@@ -92,7 +93,7 @@ def train(config: DictConfig) -> None:
                 })
 
             # Save model state dict
-            if (iteration_num % config.base.save_interval == config.base.save_interval - 1):
+            if (iteration_num % config.base.save_interval == 0 and 0 < iteration_num):
                 file_path = f"{config.base.save_location}/{config.base.experiment_name}_{iteration_num}iters.pt"
                 print(f"Saving model to {file_path}")
                 torch.save(model.state_dict(), file_path)
@@ -118,7 +119,7 @@ def train(config: DictConfig) -> None:
 
                 dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
 
-            if (batch_num % config.wandb.validation_log_interval == config.wandb.validation_log_interval - 1):
+            if (batch_num % config.wandb.validation_log_interval == 0 and 0 < batch_num):
                 print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {validation_loss.item() / (batch_num + 1):.3f} | dice: {dice_score / (batch_num + 1):.3f}")
                 wandb.log({
                     "epoch" : epoch_num,
