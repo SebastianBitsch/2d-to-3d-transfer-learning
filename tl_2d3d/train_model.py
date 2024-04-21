@@ -25,7 +25,7 @@ from tl_2d3d.models.model import make_model
 
 @hydra.main(version_base="1.2", config_path="conf", config_name="config")
 def train(config: DictConfig) -> None:
-    print(f"Runnning {config.base.experiment_name}")
+    print(f"Running experiment '{config.base.experiment_name}'")
     set_seed(seed = config.hyperparameters.seed)
     device = get_device()
 

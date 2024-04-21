@@ -14,9 +14,9 @@ data:
   image_width: 640
   image_height: 360
 
-  pct_train_split: 0.7 
-  pct_val_split  : 0.2
-  pct_test_split : 0.1
+  pct_train_split: 0.8 # of the half data set
+  pct_val_split  : 0.2 # of the half data set
+  pct_test_split : 0.2 # of the full data set
 
 hyperparameters:
   seed: 1312
