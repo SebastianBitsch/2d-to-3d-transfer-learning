@@ -18,7 +18,8 @@ PYTHON_INTERPRETER = python
 
 ## Set up python interpreter environment
 create_environment:
-	conda create --name $(PROJECT_NAME) python=$(PYTHON_VERSION) --no-default-packages -y
+	module load python3.10.13
+	python3 -m venv .env
 
 ## Install Python Dependencies
 requirements:

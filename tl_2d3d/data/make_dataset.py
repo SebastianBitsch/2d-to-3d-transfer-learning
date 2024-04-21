@@ -3,22 +3,22 @@ from pathlib import Path
 from monai.data import DataLoader, Dataset
 from torch.utils.data import random_split
 from omegaconf import DictConfig
-from monai import transforms
+import monai
 
 def make_dataloaders(config: DictConfig) -> tuple[DataLoader]:
     """ Create train,val,test dataloader """
 
-    transforms = transforms.Compose([
-        transforms.LoadImaged(keys=['image', 'label']),
-        transforms.EnsureChannelFirstd(keys=['image', 'label']),
-        # transforms.Spacingd(keys=['image', 'label'], pixdim=config.data.voxel_dims, mode=["bilinear", "nearest"]),
-        transforms.ResizeWithPadOrCropd(keys=['image', 'label'], spatial_size=config.data.image_dims),
-        transforms.RandSpatialCropd(keys=['image', 'label'], roi_size=[-1, -1, 1]),
-        # transforms.SqueezeDimd(keys=['image', 'label'], dim=-1), # TODO: This doesn't work for some reason idk why, should investigate
+    transforms = monai.transforms.Compose([
+        monai.transforms.LoadImaged(keys=['image', 'label']),
+        monai.transforms.EnsureChannelFirstd(keys=['image', 'label']),
+        # monai.transforms.Spacingd(keys=['image', 'label'], pixdim=config.data.voxel_dims, mode=["bilinear", "nearest"]),
+        monai.transforms.ResizeWithPadOrCropd(keys=['image', 'label'], spatial_size=config.data.image_dims),
+        monai.transforms.RandSpatialCropd(keys=['image', 'label'], roi_size=[-1, -1, 1]),
+        # monai.transforms.SqueezeDimd(keys=['image', 'label'], dim=-1), # TODO: This doesn't work for some reason idk why, should investigate
 
         # TODO: (Light) data augmentation
 
-        # transforms.AsDiscreted(keys=['label'], to_onehot=2) # Convert "label" to onehot encoded.
+        monai.transforms.AsDiscreted(keys=['label'], to_onehot=2) # Convert "label" to onehot encoded.
     ])
 
     full_dataset = Dataset(

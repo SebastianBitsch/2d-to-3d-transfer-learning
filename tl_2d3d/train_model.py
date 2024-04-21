@@ -41,13 +41,13 @@ def train(config: DictConfig) -> None:
         project = config.wandb.project_name,
         entity = config.wandb.team_name,
         config = {
-            "architecture": model.name,
+            "architecture": model.__class__.__name__,
             "optimizer" : optimizer.__class__.__name__,
             "loss_fn" : loss_fn.__class__.__name__,
             "inferer" : inferer.__class__.__name__,
             "dataset": "KiTS",
             "learning_rate": config.hyperparameters.learning_rate,
-            "max_iterations": config.hyperparameters.max_iterations,
+            "max_iterations": config.hyperparameters.max_num_iterations,
             "epochs": config.hyperparameters.epochs,
             "batch_size" : config.hyperparameters.batch_size,
         },
@@ -57,7 +57,7 @@ def train(config: DictConfig) -> None:
     iteration_num = 0
     total_training_time = 0
     for epoch_num in range(config.hyperparameters.epochs):
-        print(f"**** Epoch {epoch_num+1}/{config.hyperparameters.epochs} | Iterations {iteration_num + 1}/{config.hyperparameters.max_num_iterations}****")
+        print(f"**** Epoch {epoch_num+1}/{config.hyperparameters.epochs} | Iterations {iteration_num + 1}/{config.hyperparameters.max_num_iterations} ****")
 
         epoch_start_time = time.time()
         training_loss = 0.0
@@ -66,9 +66,8 @@ def train(config: DictConfig) -> None:
         # Train
         model.train()
         for batch_num, batch in enumerate(train_dataloader):
-            x = batch['image'].to(device)
-            y = batch['label'].to(device)
-
+            x = batch['image'].to(device).squeeze(dim = -1) # TODO: This squeeze has to be here because monai.transforms.SqueezeDimd gives error
+            y = batch['label'].to(device).squeeze(dim = -1) # TODO: This squeeze has to be here because monai.transforms.SqueezeDimd gives error
             optimizer.zero_grad()
 
             y_pred = model(x)

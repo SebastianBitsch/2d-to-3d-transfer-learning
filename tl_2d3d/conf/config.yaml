@@ -19,7 +19,7 @@ hyperparameters:
   batch_size: 2
   epochs: 5
   learning_rate: 1e-5
-  max_iterations: 10_000 # how many iterations to run / stop at (if n epochs and max time is large enough)
+  max_num_iterations: 10_000 # how many iterations to run / stop at (if n epochs and max time is large enough)
   max_training_time: 3600 # in seconds, how long to train for (if max_iterations and n epochs is large enough)
 
 

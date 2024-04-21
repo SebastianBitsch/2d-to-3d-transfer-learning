@@ -38,8 +38,7 @@
 nvidia-smi 
 
 # Setup env
-.  /dtu/3d-imaging-center/courses/conda/conda_init.sh
-conda activate env-02510
+source .env/bin/activate
 
 # Set the default config to use. kinda hacky ngl
 config_name="${config_name:=config}"
