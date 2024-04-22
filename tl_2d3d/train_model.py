@@ -1,6 +1,4 @@
 import time
-import logging
-from itertools import chain
 
 import torch
 import wandb
@@ -8,15 +6,6 @@ import hydra
 import monai
 
 from omegaconf import DictConfig
-from hydra.utils import to_absolute_path
-from torch.utils.data import DataLoader, random_split
-from torchvision import transforms
-from torchvision.utils import make_grid
-
-from monai.data import DataLoader, Dataset
-from monai.transforms.utils import allow_missing_keys_mode
-from monai.transforms import BatchInverseTransform
-from monai.networks.nets import DynUNet
 import medpy.metric as metric
 
 from tl_2d3d.data.make_dataset import make_dataloaders
@@ -105,7 +94,9 @@ def train(config: DictConfig) -> None:
 
             iteration_num += 1
         
-        total_training_time += time.time() - epoch_start_time
+        epoch_time = time.time() - epoch_start_time
+        total_training_time += epoch_time
+        print(f"Training epoch {epoch_num+1} done. Took {int(epoch_time)} seconds. Total training time {int(total_training_time)} seconds.")
 
         # Validate
         model.eval()
