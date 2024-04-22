@@ -1,0 +1,16 @@
+defaults:
+  - config
+  - _self_
+
+base:
+  experiment_name: finetune2d
+
+model:
+  path_to_weights: /work3/s204163/3dimaging_finalproject/weights/baseline2d_6216iters.pt # the final baseline model
+
+data:
+  use_dataset_a: false # use dataset b, used for finetuning
+
+wandb:
+  mode: online
+  run_name: finetune2d
