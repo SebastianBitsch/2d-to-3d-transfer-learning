@@ -23,10 +23,10 @@
 #BSUB -R "span[hosts=1]"
 
 ### -- specify that we need X GB of memory per core/slot -- 
-#BSUB -R "rusage[mem=2GB]"
+#BSUB -R "rusage[mem=1GB]"
 
 ### -- set walltime limit: hh:mm --
-#BSUB -W 24:00
+#BSUB -W 3:00
 
 ### -- set the email address --
 #BSUB -u s204163@student.dtu.dk
