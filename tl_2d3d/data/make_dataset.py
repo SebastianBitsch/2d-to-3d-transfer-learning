@@ -17,11 +17,12 @@ def make_dataloaders(config: DictConfig, use_dataset_a: bool) -> tuple[DataLoade
         monai.transforms.EnsureChannelFirstd(keys=['image', 'label']),
         # monai.transforms.Spacingd(keys=['image', 'label'], pixdim=config.data.voxel_dims, mode=["bilinear", "nearest"]),
         monai.transforms.ResizeWithPadOrCropd(keys=['image', 'label'], spatial_size=config.data.image_dims),
-        monai.transforms.RandSpatialCropd(keys=['image', 'label'], roi_size=[-1, -1, 1]),
+        monai.transforms.RandSpatialCropd(keys=['image', 'label'], roi_size=config.data.crop_size),
         # monai.transforms.SqueezeDimd(keys=['image', 'label'], dim=-1), # TODO: This doesn't work for some reason idk why, should investigate
 
         # TODO: (Light) data augmentation - and check they look ok
-        monai.transforms.RandRotated(keys=['image', 'label'], range_z = 180, prob = 0.5, mode='nearest'),
+        # TODO: Maybe flip instead of rotates - or neither, well see
+        monai.transforms.RandRotated(keys=['image', 'label'], range_z = 180, prob = 0.5, mode='nearest'), # TODO: Bilienear for image
         monai.transforms.RandGaussianSmoothd(keys=['image'], sigma_x=(0.25, 1.5), sigma_y=(0.25, 1.5), sigma_z=(0.25, 1.5), approx='erf', prob=0.5),
         monai.transforms.RandGaussianNoised(keys=['image'], prob=0.5, mean=0.0, std=0.5),
 
