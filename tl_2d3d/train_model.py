@@ -117,10 +117,11 @@ def train(config: DictConfig) -> None:
 
             with torch.no_grad():
                 y_pred = model(x)
+
                 loss = loss_fn(y_pred, y)
                 validation_loss += loss
-                print(y_pred.shape, y.shape)
-                dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
+                
+                dice_score += metric.dc(y_pred.argmax(dim=1).squeeze(), y.argmax(dim=1).squeeze()) # Not elegant, but ok # NOTE: This wont work for batch size < 1, since hd95 doesnt do +3 dims. multiple hours of my life
                 # Apparently hd breaks if all predictions are 0 - safeguard against that (why doesnt medpy handle it..)
                 if torch.count_nonzero(y_pred.argmax(dim=1)) and torch.count_nonzero(y.argmax(dim=1)):
                     hd95_score += metric.binary.hd95(y_pred.argmax(dim=1), y.argmax(dim=1), voxelspacing = config.data.voxel_dims) # Not elegant, but ok
