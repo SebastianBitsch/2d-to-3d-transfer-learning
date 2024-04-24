@@ -1,9 +1,14 @@
+# 3D DynUNet pretrained on Dataset A for n iterations
+
 defaults:
   - config
   - _self_
 
 base:
   experiment_name: baseline3d
+
+hyperparameters:
+  max_training_time: 3600 # one hour
 
 model:
   num_dimensions: 3   # 2 or 3 - for 2D or 3D nothing else pls

@@ -1,3 +1,5 @@
+# 2D DynUNet fine-tuned on Dataset B for m iterations.
+
 defaults:
   - config
   - _self_
@@ -10,6 +12,7 @@ model:
 
 hyperparameters: 
   learning_rate: 1e-5
+  max_training_time: 3600 # one hour
 
 data:
   use_dataset_a: false # use dataset b, used for finetuning

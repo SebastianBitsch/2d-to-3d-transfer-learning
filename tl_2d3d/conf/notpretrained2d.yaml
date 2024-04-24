@@ -5,19 +5,17 @@ defaults:
   - _self_
 
 base:
-  experiment_name: notpretrained2d
+  experiment_name: notpretrained2d_try2
 
 data:
   use_dataset_a: false # use dataset b, used for finetuning
 
 hyperparameters:
-  epochs: 40_000
   learning_rate: 1e-3
   use_scheduler: true      # if using scheduler the lr will switch to 1e-5 after half the training time has passed
-  max_num_iterations: 20_000 # how many iterations to run / stop at (if n epochs and max time is large enough)
-  max_training_time: 14400 # (4 hours) in seconds, how long to train for (if max_iterations and n epochs is large enough)
+  max_training_time: 7200 # (4 hours) in seconds, how long to train for (if max_iterations and n epochs is large enough)
 
 
 wandb:
   mode: online
-  run_name: notpretrained2d
+  run_name: notpretrained2d_try2

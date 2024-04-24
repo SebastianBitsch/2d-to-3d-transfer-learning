@@ -1,3 +1,6 @@
+# This is the default config that all other configs for doing individual experiments will
+# inherit from. If values aren't overwritten they grab their values from here.
+
 base:
   experiment_name: base # Should be overwriten in exp files
   save_interval: 1000 # how often should the weights of the model be saved
@@ -26,10 +29,10 @@ data:
 hyperparameters:
   seed: 1312
   batch_size: 4
-  epochs: 20_000
+  epochs: 200_000 # high number so training time is the limiting factor
   learning_rate: 1e-3
   use_scheduler: false      # if using scheduler the lr will switch to 1e-5 after half the training time has passed
-  max_num_iterations: 10_000 # how many iterations to run / stop at (if n epochs and max time is large enough)
+  max_num_iterations: 200_000 # (high number so training time is the limiting factor) how many iterations to run / stop at (if n epochs and max time is large enough)
   max_training_time: 7200 # in seconds, how long to train for (if max_iterations and n epochs is large enough)
 
 

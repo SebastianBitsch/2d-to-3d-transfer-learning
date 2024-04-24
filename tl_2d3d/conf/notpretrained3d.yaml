@@ -1,0 +1,24 @@
+# 3D DynUNet trained on Dataset B for n+m iterations
+
+defaults:
+  - config
+  - _self_
+
+base:
+  experiment_name: notpretrained3d
+
+model:
+  num_dimensions: 3   # 2 or 3 - for 2D or 3D nothing else pls
+
+data:
+  use_dataset_a: false # use dataset b, used for finetuning
+
+hyperparameters:
+  learning_rate: 1e-3
+  use_scheduler: true      # if using scheduler the lr will switch to 1e-5 after half the training time has passed
+  max_training_time: 7200 # (2 hours) in seconds, how long to train for (if max_iterations and n epochs is large enough)
+
+
+wandb:
+  mode: online
+  run_name: notpretrained3d

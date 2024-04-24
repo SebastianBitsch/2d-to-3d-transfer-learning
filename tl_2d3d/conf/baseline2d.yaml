@@ -1,10 +1,15 @@
+# 2D DynUNet pretrained on Dataset A for n iterations
+
 defaults:
   - config
   - _self_
 
 base:
-  experiment_name: baseline2d
+  experiment_name: baseline2d_try2
+
+hyperparameters:
+  max_training_time: 3600 # one hour
 
 wandb:
   mode: online
-  run_name: baseline2d
+  run_name: baseline2d_try2
