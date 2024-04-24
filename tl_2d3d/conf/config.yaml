@@ -15,10 +15,9 @@ data:
   dataset_path: /dtu/3d-imaging-center/courses/02510/data/KiTS19
   use_dataset_a: true # the dataset is split into a and b dataset - a used for pretraining b used for finetuning
   n_classes: 2
-  image_dims: [256, 256,-1] # what size should the images/volumes be resized to
+  image_dims: [256, 256, -1] # what size should the images/volumes be resized to
   voxel_dims: [1.464845, 1.464845, 10.0] # what size should the voxels be resized to. this value is found in a notebook beforehand
-  image_width: 640
-  image_height: 360
+  crop_size: [-1, -1, 1] # whether to crop the 3D volume to a 2d slice, if [-1,-1,1] will crop. if [-1,-1,-1] wont crop. kinda shitty way of doing it
 
   pct_train_split: 0.8 # of the half data set
   pct_val_split  : 0.2 # of the half data set
@@ -29,6 +28,7 @@ hyperparameters:
   batch_size: 4
   epochs: 20_000
   learning_rate: 1e-3
+  use_scheduler: false      # if using scheduler the lr will switch to 1e-5 after half the training time has passed
   max_num_iterations: 10_000 # how many iterations to run / stop at (if n epochs and max time is large enough)
   max_training_time: 7200 # in seconds, how long to train for (if max_iterations and n epochs is large enough)
 

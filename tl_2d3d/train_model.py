@@ -7,6 +7,7 @@ import monai
 
 from omegaconf import DictConfig
 import medpy.metric as metric
+from torch.optim.lr_scheduler import LambdaLR
 
 from tl_2d3d.data.make_dataset import make_dataloaders
 from tl_2d3d.utils import get_device, set_seed
@@ -16,16 +17,27 @@ from tl_2d3d.models.model import make_model
 def train(config: DictConfig) -> None:
     print(f"Running experiment '{config.base.experiment_name}'")
     set_seed(seed = config.hyperparameters.seed)
+
+    iteration_num = 0
+    total_training_time = 0
+
     device = get_device()
 
     # Make model and dataloders - we specify to use either dataset A or B for pretraining and finetuning
     model = make_model(config, device = device)
     train_dataloader, val_dataloader, test_dataloader = make_dataloaders(config, use_dataset_a=config.data.use_dataset_a)
 
-    # 
+    # Loss fun, opimizer, etc.
     loss_fn = monai.losses.DiceLoss(softmax=True, to_onehot_y=False) # Apply "softmax" to the output of the network and don't convert to onehot because this is done already by the transforms.
     optimizer = torch.optim.Adam(model.parameters(), lr = config.hyperparameters.learning_rate)
     inferer = monai.inferers.SliceInferer(roi_size=[-1, -1], spatial_dim=2, sw_batch_size=1)
+
+    # Kinda hacky and shit way of implementing a scheduler - but it changes the learning rate from 1e-3 to 1e-5 after half the training time if the scheudler is on
+    if config.hyperparameters.use_scheduler:
+        lambda_fn = lambda _epoch: config.hyperparameters.learning_rate * 1e-2 if config.hyperparameters.max_training_time / 2.0 < total_training_time else config.hyperparameters.learning_rate
+    else:
+        lambda_fn = lambda _epoch: config.hyperparameters.learning_rate
+    scheduler = LambdaLR(optimizer, lr_lambda=lambda_fn)
 
     # Initialize logging
     wandb.init(
@@ -46,8 +58,6 @@ def train(config: DictConfig) -> None:
         mode = config.wandb.mode
     )
 
-    iteration_num = 0
-    total_training_time = 0
     for epoch_num in range(config.hyperparameters.epochs):
         print(f"**** Epoch {epoch_num+1}/{config.hyperparameters.epochs} | Iterations {iteration_num + 1}/{config.hyperparameters.max_num_iterations} ****")
 
@@ -69,6 +79,7 @@ def train(config: DictConfig) -> None:
             loss = loss_fn(y_pred, y)
             loss.backward()
             optimizer.step()
+            scheduler.step()
             
             training_loss += loss
 
@@ -106,10 +117,11 @@ def train(config: DictConfig) -> None:
 
             with torch.no_grad():
                 y_pred = model(x)
+
                 loss = loss_fn(y_pred, y)
                 validation_loss += loss
                 
-                dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) # Not elegant, but ok
+                dice_score += metric.dc(y_pred.argmax(dim=1).squeeze(), y.argmax(dim=1).squeeze()) # Not elegant, but ok # NOTE: This wont work for batch size < 1, since hd95 doesnt do +3 dims. multiple hours of my life
                 # Apparently hd breaks if all predictions are 0 - safeguard against that (why doesnt medpy handle it..)
                 if torch.count_nonzero(y_pred.argmax(dim=1)) and torch.count_nonzero(y.argmax(dim=1)):
                     hd95_score += metric.binary.hd95(y_pred.argmax(dim=1), y.argmax(dim=1), voxelspacing = config.data.voxel_dims) # Not elegant, but ok
