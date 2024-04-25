@@ -91,7 +91,6 @@ def train(config: DictConfig) -> None:
                     "iteration" : iteration_num,
                     "batch/train" : batch_num,
                     "loss/train"  : training_loss.item() / (batch_num + 1),
-                    "learning_rate": config.hyperparameters.learning_rate,
                 })
 
             # Save model state dict
@@ -141,7 +140,7 @@ def train(config: DictConfig) -> None:
             break
     
     # Save the final model
-    save_model(model, iteration_num=iteration_num, config=config)
+    save_model(model, iteration_num=iteration_num, config=config, final=True)
 
     wandb.finish()
 
