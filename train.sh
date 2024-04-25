@@ -26,7 +26,7 @@
 #BSUB -R "rusage[mem=1GB]"
 
 ### -- set walltime limit: hh:mm --
-#BSUB -W 10:00
+#BSUB -W 23:00
 
 ### -- set the email address --
 #BSUB -u s204163@student.dtu.dk
