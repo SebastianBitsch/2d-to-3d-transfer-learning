@@ -43,9 +43,9 @@ def make_dataloaders(config: DictConfig, use_dataset_a: bool) -> tuple[DataLoade
     train_dataset, val_dataset = random_split(main_dataset, lengths = [config.data.pct_train_split, config.data.pct_val_split])
 
     # Dataloaders
-    train_dataloader = DataLoader(train_dataset, batch_size = config.hyperparameters.batch_size, shuffle = True)
-    val_dataloader   = DataLoader(val_dataset,   batch_size = 1, shuffle = False) 
-    test_dataloader  = DataLoader(test_dataset,  batch_size = 1, shuffle = False) 
+    train_dataloader = DataLoader(train_dataset, batch_size = config.hyperparameters.batch_size, shuffle = True, num_workers = config.data.num_workers)
+    val_dataloader   = DataLoader(val_dataset,   batch_size = 1, shuffle = False, num_workers = config.data.num_workers)
+    test_dataloader  = DataLoader(test_dataset,  batch_size = 1, shuffle = False, num_workers = config.data.num_workers)
 
     return train_dataloader, val_dataloader, test_dataloader
 
