@@ -10,7 +10,7 @@ import medpy.metric as metric
 from torch.optim.lr_scheduler import LambdaLR
 
 from tl_2d3d.data.make_dataset import make_dataloaders
-from tl_2d3d.utils import get_device, set_seed
+from tl_2d3d.utils import get_device, set_seed, save_model, hd95
 from tl_2d3d.models.model import make_model
 
 @hydra.main(version_base="1.2", config_path="conf", config_name="config")
@@ -32,11 +32,11 @@ def train(config: DictConfig) -> None:
     optimizer = torch.optim.Adam(model.parameters(), lr = config.hyperparameters.learning_rate)
     inferer = monai.inferers.SliceInferer(roi_size=[-1, -1], spatial_dim=2, sw_batch_size=1)
 
-    # Kinda hacky and shit way of implementing a scheduler - but it changes the learning rate from 1e-3 to 1e-5 after half the training time if the scheudler is on
+    # Kinda hacky and shit way of implementing a scheduler - but it changes the learning rate from default (1e-3) to 1e-5 after half the training time if the scheudler is on
     if config.hyperparameters.use_scheduler:
-        lambda_fn = lambda _epoch: config.hyperparameters.learning_rate * 1e-2 if config.hyperparameters.max_training_time / 2.0 < total_training_time else config.hyperparameters.learning_rate
+        lambda_fn = lambda _: 1.0 if total_training_time < config.hyperparameters.max_training_time / 2.0 else 1e-2
     else:
-        lambda_fn = lambda _epoch: config.hyperparameters.learning_rate
+        lambda_fn = lambda _: 1.0
     scheduler = LambdaLR(optimizer, lr_lambda=lambda_fn)
 
     # Initialize logging
@@ -96,9 +96,7 @@ def train(config: DictConfig) -> None:
 
             # Save model state dict
             if (iteration_num % config.base.save_interval == 0 and 0 < iteration_num):
-                file_path = f"{config.base.save_location}/{config.base.experiment_name}_{iteration_num}iters.pt"
-                print(f"Saving model to {file_path}")
-                torch.save(model, file_path)
+                save_model(model, iteration_num=iteration_num, config=config)
             
             # Check for termination criteria
             if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
@@ -123,9 +121,9 @@ def train(config: DictConfig) -> None:
                 validation_loss += loss
                 
                 dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) 
-                # Apparently hd breaks if all predictions are 0 - safeguard against that (why doesnt medpy handle it..)
-                if torch.count_nonzero(y_pred.argmax(dim=1)) and torch.count_nonzero(y.argmax(dim=1)):
-                    hd95_score += metric.binary.hd95(y_pred.argmax(dim=1).squeeze(), y.argmax(dim=1).squeeze(), voxelspacing = config.data.voxel_dims) # Not elegant, but ok # NOTE: This wont work for batch size < 1, since hd95 doesnt do +3 dims. multiple hours of my life
+                print(y.shape, y_pred.shape)
+                hd95_score += hd95(y.argmax(dim=1), y_pred.argmax(dim=1), config)
+
 
             if (batch_num % config.wandb.validation_log_interval == 0 and 0 < batch_num):
                 print(f"{batch_num + 1}/{len(val_dataloader)} | val loss: {validation_loss.item() / (batch_num + 1):.3f} | dice: {dice_score / (batch_num + 1):.3f} | hd95: {hd95_score / (batch_num + 1):.3f}")
@@ -140,12 +138,11 @@ def train(config: DictConfig) -> None:
 
         # Check for termination criteria
         if config.hyperparameters.max_num_iterations <= iteration_num or config.hyperparameters.max_training_time <= total_training_time:
+            print("Ending training; Hit termination criteria")
             break
     
-    # Save the final model - could be cleaner
-    file_path = f"{config.base.save_location}/{config.base.experiment_name}_{iteration_num}iters.pt"
-    print(f"Saving -final- model to {file_path}")
-    torch.save(model, file_path)
+    # Save the final model
+    save_model(model, iteration_num=iteration_num, config=config)
 
     wandb.finish()
 
