@@ -14,12 +14,13 @@ def make_model(config: DictConfig, device: str) -> nn.Module:
     )
 
     # Load weights
-    if config.model.path_to_weights:
+    if config.model.path_to_weights: # This is so bad.. 
         print(f"Loading weights ({config.model.path_to_weights}) on to model")
-        if device == 'cpu':
+        try:
+            model = torch.load(config.model.path_to_weights)
+        except:
             model.load_state_dict(torch.load(config.model.path_to_weights, map_location=device))
-        else:
-            model.load_state_dict(torch.load(config.model.path_to_weights))
+
     else:
         print(f"No weights loaded, training from scratch")
 
