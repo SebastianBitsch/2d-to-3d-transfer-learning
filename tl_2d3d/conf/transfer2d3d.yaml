@@ -1,0 +1,25 @@
+# 3D DynUNet fine-tuned on Dataset B for m iterations.
+
+defaults:
+  - config
+  - _self_
+
+base:
+  experiment_name: finetune3d
+
+model:
+  path_to_weights: /work3/s204163/3dimaging_finalproject/weights/baseline2d/baseline2d_final.pt # the final baseline model
+  num_dimensions: 3   # 2 or 3 - for 2D or 3D nothing else pls
+
+data:
+  use_dataset_a: false # use dataset b, used for finetuning
+  image_dims: [256, 256, 32] # what size should the images/volumes be resized to 38 is the median of the 'A' dataset
+  crop_size: [-1, -1, -1] # whether to crop the 3D volume to a 2d slice, if [-1,-1,1] will crop. if [-1,-1,-1] wont crop. kinda shitty way of doing it
+
+hyperparameters: 
+  learning_rate: 1e-5
+  max_training_time: 3600 # one hour
+
+wandb:
+  mode: online
+  run_name: finetune3d
