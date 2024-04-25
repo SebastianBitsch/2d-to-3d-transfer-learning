@@ -1,10 +1,26 @@
+import os
 import random
 
 import torch
 import monai
+import medpy.metric as metric
 import numpy as np
 import torch.nn as nn
+from omegaconf import DictConfig
 
+
+def save_model(model:nn.Module, iteration_num:int, config:DictConfig, verbose:bool = True) -> None:
+    """ Save a model checkpoint to a directory. Will save on the format /save_dir/exp1/exp1_1000iters.pt """
+    dir_path = f"{config.base.save_location}/{config.base.experiment_name}/"
+    file_path = dir_path + f"{config.base.experiment_name}_{iteration_num}iters.pt"
+
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+
+    if verbose:
+        print(f"Saving model to {file_path}")
+    
+    torch.save(model, file_path)
 
 def get_device(verbose: bool = True) -> str:
     """ TODO: Should probably be more complex for multiple GPUs etc. """
@@ -22,6 +38,17 @@ def set_seed(seed: int) -> None:
     monai.utils.misc.set_determinism(seed, use_deterministic_algorithms=True)
     torch.use_deterministic_algorithms(True)
 
+
+def hd95(y:torch.Tensor, y_pred:torch.Tensor, config:DictConfig) -> float:
+    if torch.all(y_pred == 0) or torch.all(y == 0):
+        # Both arrays must contain binary objects, Runtime error if not
+        return 0.0
+
+    # TODO: Maybe there is a better way at handling 2D vs 3D
+    if config.model.num_dimensions == 2:
+        return metric.binary.hd95(y_pred, y, voxelspacing = config.data.voxel_dims) 
+    else:
+        return metric.binary.hd95(y_pred.squeeze(), y.squeeze(), voxelspacing = config.data.voxel_dims) 
 
 def count_parameters(model): 
     """ Get the number of params in a model. See: https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325"""
