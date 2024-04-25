@@ -15,7 +15,7 @@ data:
   crop_size: [-1, -1, -1] # whether to crop the 3D volume to a 2d slice, if [-1,-1,1] will crop. if [-1,-1,-1] wont crop. kinda shitty way of doing it
 
 hyperparameters:
-  max_training_time: 3600 # one hour
+  max_training_time: 7200 # one hour
 
 wandb:
   mode: online # TODO: Change when running

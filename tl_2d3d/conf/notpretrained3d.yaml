@@ -12,11 +12,13 @@ model:
 
 data:
   use_dataset_a: false # use dataset b, used for finetuning
+  image_dims: [256, 256, 32] # what size should the images/volumes be resized to 38 is the median of the 'A' dataset
+  crop_size: [-1, -1, -1] # whether to crop the 3D volume to a 2d slice, if [-1,-1,1] will crop. if [-1,-1,-1] wont crop. kinda shitty way of doing it
 
 hyperparameters:
   learning_rate: 1e-3
   use_scheduler: true      # if using scheduler the lr will switch to 1e-5 after half the training time has passed
-  max_training_time: 7200 # (2 hours) in seconds, how long to train for (if max_iterations and n epochs is large enough)
+  max_training_time: 14400 # (2 hours) in seconds, how long to train for (if max_iterations and n epochs is large enough)
 
 
 wandb:
