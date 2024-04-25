@@ -115,13 +115,12 @@ def train(config: DictConfig) -> None:
             y = batch['label'].to(device).squeeze(dim = -1) # TODO: This squeeze has to be here because monai.transforms.SqueezeDimd gives error
 
             with torch.no_grad():
-                y_pred = model(x)
+                y_pred = model(x) # 2D: [batch, n_class, size_x, size_y] 3D: [batch, n_class, size_x, size_y, size_z]
 
                 loss = loss_fn(y_pred, y)
                 validation_loss += loss
                 
-                dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1)) 
-                print(y.shape, y_pred.shape)
+                dice_score += metric.dc(y_pred.argmax(dim=1), y.argmax(dim=1))                 
                 hd95_score += hd95(y.argmax(dim=1), y_pred.argmax(dim=1), config)
 
 

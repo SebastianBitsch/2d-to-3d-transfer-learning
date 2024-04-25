@@ -48,7 +48,7 @@ def hd95(y:torch.Tensor, y_pred:torch.Tensor, config:DictConfig) -> float:
     if config.model.num_dimensions == 2:
         return metric.binary.hd95(y_pred, y, voxelspacing = config.data.voxel_dims) 
     else:
-        return metric.binary.hd95(y_pred.squeeze(), y.squeeze(), voxelspacing = config.data.voxel_dims) 
+        return metric.binary.hd95(y_pred.squeeze(), y.squeeze(), voxelspacing = config.data.voxel_dims) # Shape y.squeeze(): [1, 256, 256, 32]
 
 def count_parameters(model): 
     """ Get the number of params in a model. See: https://discuss.pytorch.org/t/how-do-i-check-the-number-of-parameters-of-a-model/4325"""
