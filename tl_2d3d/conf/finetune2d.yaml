@@ -8,7 +8,7 @@ base:
   experiment_name: finetune2d
 
 model:
-  path_to_weights: /work3/s204163/3dimaging_finalproject/weights/baseline2d_2h_6216iters.pt # the final baseline model
+  path_to_weights: models/baseline2d/baseline2d_final.pt # the final baseline model
 
 hyperparameters: 
   learning_rate: 1e-5

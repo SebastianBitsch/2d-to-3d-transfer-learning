@@ -22,6 +22,7 @@ data:
   voxel_dims: [1.464845, 1.464845, 10.0] # what size should the voxels be resized to. this value is found in a notebook beforehand
   crop_size: [-1, -1, 1] # whether to crop the 3D volume to a 2d slice, if [-1,-1,1] will crop. if [-1,-1,-1] wont crop. kinda shitty way of doing it
 
+  num_workers: 0       # faster with 0 workers on my mac m1 idk why (7 seconds vs 30 seconds per epoch training)
   pct_train_split: 0.8 # of the half data set
   pct_val_split  : 0.2 # of the half data set
   pct_test_split : 0.2 # of the full data set
