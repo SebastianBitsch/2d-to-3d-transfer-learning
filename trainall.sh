@@ -62,3 +62,6 @@ wait
 
 # Transfer learning
 python3 tl_2d3d/train_model.py --config-name=transfer2d3d
+wait
+
+python3 tl_2d3d/train_model.py --config-name=transfer2d3d_highlr
