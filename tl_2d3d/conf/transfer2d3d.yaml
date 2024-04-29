@@ -10,6 +10,7 @@ base:
 model:
   continue_from: baseline2d_final.pt # the final baseline model
   num_dimensions: 3   # 2 or 3 - for 2D or 3D nothing else pls
+  use_modulewise_init: true
 
 data:
   use_dataset_a: false # use dataset b, used for finetuning

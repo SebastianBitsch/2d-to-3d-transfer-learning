@@ -25,7 +25,12 @@ def make_model(config: DictConfig, device: str) -> nn.Module:
             model.load_state_dict(saved_model.state_dict())
         else:
             print(f"Loading weights from a {saved_model.spatial_dims}D model onto a {model.spatial_dims}D model")
-            init_normal_per_module(from_module=saved_model, to_module=model)
+            if config.model.use_modulewise_init:
+                init_normal_per_module(from_module=saved_model, to_module=model)
+            elif config.model.use_channelwise_init:
+                init_normal_per_channel(from_module=saved_model, to_module=model)
+            else:
+                raise NotImplementedError("Error: Loading 2D weights onto a 3D model but method for interpolating weights was specified")
 
     else:
         print(f"No weights loaded, training from scratch")
@@ -59,3 +64,44 @@ def init_normal_per_module(from_module: nn.Module, to_module: nn.Module) -> None
 
         elif isinstance(from_mod, nn.LeakyReLU):
             to_mod.negative_slope = from_mod.negative_slope
+
+
+def init_normal_per_channel(from_module: nn.Module, to_module: nn.Module) -> None:
+    """
+    Initialize the weights of a model (to_module) using the normal distributions per conv channel in another module (from_module).
+    The function will take the weights in an entire module i.e. shape [128, 64, 3, 3] and compute a single number mean and std with 
+    shape [128, 64, 1], and tile it to shape [128, 64, 3, 3, 3]
+    
+    Args:
+        from_module (nn.Module): Source module providing weights for initialization.
+        to_module (nn.Module): Target module whose weights will be initialized.
+    
+    Note:
+        The modules should be -very- similar as this functions makes the assumption the models have the same layers (either 2D or 3D) in the same order.
+    """
+    assert len(list(from_module.modules())) == len(list(to_module.modules())), "Error: Models should contain the 'same' layers"
+
+    for from_mod, to_mod in zip(from_module.modules(), to_module.modules()):
+
+        if isinstance(from_mod, (nn.Conv2d, nn.ConvTranspose2d)):
+
+            # Handle the 'complicated' case where shapes dont match, for instance (512, 256, 3, 3) and (320, 256, 3, 3, 3).
+            # TODO: We could try something more complicated, e.g. interpolation, random crop, tiling etc. for now we just take a simple crop
+            if from_mod.weight.shape != to_mod.weight.shape[:4]:
+                from_mod.weight.data = from_mod.weight.data[:to_mod.weight.shape[0], :to_mod.weight.shape[1]]
+
+            # This ungodly line takes the mean of the 2D conv (3,3) and then expands the single number into a 3D convolution, i.e. [32, 64] -> [32, 64, 3, 3, 3]
+            # TODO: I cant find a nicer way than the triple unsqueeze, though i am sure there is a nicer / more general way of doing it
+            mean = torch.mean(from_mod.weight.data, axis = (-1, -2)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand(to_mod.weight.data.shape)
+            std  = torch.std(from_mod.weight.data, axis = (-1, -2)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand(to_mod.weight.data.shape)
+        
+            # Handle Conv2D layers on the form [2, 32, 1, 1]. They have only 1 number so std is 'nan', replace with 0
+            std = torch.nan_to_num(std, nan = 0.0)
+
+            to_mod.weight.data = torch.normal(mean, std = std)
+                        
+        elif isinstance(from_mod, nn.LeakyReLU):
+            to_mod.negative_slope = from_mod.negative_slope
+
+        elif isinstance(from_mod, nn.InstanceNorm2d):
+            to_mod.weight.data = from_mod.weight.data

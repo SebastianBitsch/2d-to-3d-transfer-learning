@@ -10,6 +10,8 @@ model:
   path_to_weights: /work3/s204163/3dimaging_finalproject/weights/
   continue_from: ~  # if not None will continue training from these weights. path to the weights, should be in the /models/ dir
   num_dimensions: 2   # 2 or 3 - for 2D or 3D nothing else pls
+  use_modulewise_init: false  # When doing transfer learning from 2D to 3D this flag decides whether to use 'init_normal_per_module'  when initing weights. Not sure if a good name
+  use_channelwise_init: false # When doing transfer learning from 2D to 3D this flag decides whether to use 'init_normal_per_channel' when initing weights. Not sure if a good name
   kernel_size: [3, 3, 3, 3, 3, 3]
   strides: [1, 2, 2, 2, 2, 2]
   upsample_kernel_size: [2, 2, 2, 2, 2]
@@ -29,7 +31,7 @@ data:
   pct_test_split : 0.2 # of the full data set
 
 hyperparameters:
-  seed: 100
+  seed: 101
   batch_size: 4
   epochs: 200_000 # high number so training time is the limiting factor
   learning_rate: 1e-3
