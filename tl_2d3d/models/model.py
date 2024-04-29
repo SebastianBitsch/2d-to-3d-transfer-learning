@@ -14,10 +14,13 @@ def make_model(config: DictConfig, device: str) -> nn.Module:
     )
 
     # Load weights
-    if config.model.path_to_weights: # This is so bad.. 
-        print(f"Loading weights ({config.model.path_to_weights}) on to model")
+    if config.model.continue_from: # This is so bad.. 
+        # Terrible way of getting the name on the form: /work3/s204163/3dimaging_finalproject/weights/baseline2d_100/baseline2d_final.pt
+        exp_name = config.model.continue_from.split("_")[0]
+        full_path = f"{config.model.path_to_weights}{exp_name}_{config.hyperparameters.seed}/{config.model.continue_from}"
+        print(f"Loading weights ({full_path}) on to model")
 
-        saved_model = torch.load(config.model.path_to_weights)
+        saved_model = torch.load(full_path)
         if saved_model.spatial_dims == model.spatial_dims:
             model.load_state_dict(saved_model.state_dict())
         else:

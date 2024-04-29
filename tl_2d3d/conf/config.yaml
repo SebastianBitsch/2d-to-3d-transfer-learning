@@ -7,7 +7,8 @@ base:
   save_location: /work3/s204163/3dimaging_finalproject/weights # will be saved as {experiment_name}_{n_iterations}
 
 model:
-  path_to_weights: ~  # if not None will continue training from these weights. path to the weights, should be in the /models/ dir
+  path_to_weights: /work3/s204163/3dimaging_finalproject/weights/
+  continue_from: ~  # if not None will continue training from these weights. path to the weights, should be in the /models/ dir
   num_dimensions: 2   # 2 or 3 - for 2D or 3D nothing else pls
   kernel_size: [3, 3, 3, 3, 3, 3]
   strides: [1, 2, 2, 2, 2, 2]

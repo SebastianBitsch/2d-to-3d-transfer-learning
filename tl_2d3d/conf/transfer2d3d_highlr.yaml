@@ -8,7 +8,7 @@ base:
   experiment_name: finetune3d_highlr
 
 model:
-  path_to_weights: /work3/s204163/3dimaging_finalproject/weights/baseline2d/baseline2d_final.pt # the final baseline model
+  continue_from: baseline2d_final.pt
   num_dimensions: 3   # 2 or 3 - for 2D or 3D nothing else pls
 
 data:
