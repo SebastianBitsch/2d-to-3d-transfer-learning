@@ -10,8 +10,8 @@ from omegaconf import DictConfig
 
 
 def save_model(model:nn.Module, iteration_num:int, config:DictConfig, final:bool = False, verbose:bool = True) -> None:
-    """ Save a model checkpoint to a directory. Will save on the format /save_dir/exp1/exp1_1000iters.pt """
-    dir_path = f"{config.base.save_location}/{config.base.experiment_name}/"
+    """ Save a model checkpoint to a directory. Will save on the format /save_dir/exp1_seed/exp1_1000iters.pt """
+    dir_path = f"{config.base.save_location}/{config.base.experiment_name}_{config.hyperparameters.seed}/"
     file_path = dir_path + f"{config.base.experiment_name}_{iteration_num}iters.pt"
     if final:
         file_path = dir_path + f"{config.base.experiment_name}_final.pt"

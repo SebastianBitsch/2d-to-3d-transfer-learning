@@ -43,7 +43,7 @@ def train(config: DictConfig) -> None:
     wandb.init(
         project = config.wandb.project_name,
         entity = config.wandb.team_name,
-        name = config.wandb.run_name,
+        name = f"{config.wandb.run_name}_{config.hyperparameters.seed}",
         config = {
             "architecture": model.__class__.__name__,
             "optimizer" : optimizer.__class__.__name__,
