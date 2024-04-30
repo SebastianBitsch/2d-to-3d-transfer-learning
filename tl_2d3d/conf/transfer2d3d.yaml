@@ -5,7 +5,7 @@ defaults:
   - _self_
 
 base:
-  experiment_name: finetune3d
+  experiment_name: transfer2d3d
 
 model:
   continue_from: baseline2d_final.pt # the final baseline model
@@ -23,4 +23,4 @@ hyperparameters:
 
 wandb:
   mode: online
-  run_name: finetune3d
+  run_name: transfer2d3d
