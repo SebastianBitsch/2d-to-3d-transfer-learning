@@ -19,7 +19,7 @@ def make_model(config: DictConfig, device: str) -> nn.Module:
         if device == 'cpu':
             model.load_state_dict(torch.load(config.model.path_to_weights, map_location=device))
         else:
-            model.load_state_dict(torch.load(config.model.path_to_weights))
+            model.load_state_dict(torch.load(config.model.path_to_weights, map_location=device))
     else:
         print(f"No weights loaded, training from scratch")
 

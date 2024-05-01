@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from monai.data import DataLoader, Dataset
+from monai.transforms import BatchInverseTransform
 from torch.utils.data import random_split
 from omegaconf import DictConfig
 import monai
@@ -28,6 +29,14 @@ def make_dataloaders(config: DictConfig, use_dataset_a: bool) -> tuple[DataLoade
 
         monai.transforms.AsDiscreted(keys=['label'], to_onehot=config.data.n_classes)
     ])
+    
+    test_transforms = monai.transforms.Compose([
+        monai.transforms.LoadImaged(keys=['image', 'label']),
+        monai.transforms.EnsureChannelFirstd(keys=['image', 'label']),
+        # monai.transforms.Spacingd(keys=['image', 'label'], pixdim=config.data.voxel_dims, mode=["bilinear", "nearest"]),
+        monai.transforms.ResizeWithPadOrCropd(keys=['image', 'label'], spatial_size=config.data.image_dims),
+        monai.transforms.RandSpatialCropd(keys=['image', 'label'], roi_size=config.data.crop_size)
+    ])
 
     full_dataset = Dataset(
         data = read_dataset(dataset_name=config.data.dataset_name, path=config.data.dataset_path), 
@@ -45,9 +54,17 @@ def make_dataloaders(config: DictConfig, use_dataset_a: bool) -> tuple[DataLoade
     # Dataloaders
     train_dataloader = DataLoader(train_dataset, batch_size = config.hyperparameters.batch_size, shuffle = True)
     val_dataloader   = DataLoader(val_dataset,   batch_size = 1, shuffle = False) 
-    test_dataloader  = DataLoader(test_dataset,  batch_size = 1, shuffle = False) 
+    
+    test_indices = test_dataset.indices
+    test_dataset_transformed = Dataset(
+        data = read_kits_data_idx(dataset_path=config.data.dataset_path, indices=test_indices), 
+        transform = test_transforms
+    )
+    test_dataloader  = DataLoader(test_dataset_transformed,  batch_size = 1, shuffle = False) 
+    
+    
 
-    return train_dataloader, val_dataloader, test_dataloader
+    return train_dataloader, val_dataloader, test_dataloader, test_transforms
 
 
 def read_dataset(dataset_name: str, path: str) -> list[dict]:
@@ -82,6 +99,24 @@ def read_kits_data(dataset_path: str = "/dtu/3d-imaging-center/courses/02510/dat
         }
         for path in sorted(Path(dataset_path).glob("*/imaging.nii.gz"))
     ]
+
+def read_kits_data_idx(dataset_path: str = "/dtu/3d-imaging-center/courses/02510/data/KiTS19", indices: list[int] = None) -> list[dict]:
+    """ Assumes the data has quite specific structure. """
+    all_paths = sorted(Path(dataset_path).glob("*/imaging.nii.gz"))
+    
+    if indices is not None:
+        selected_paths = [all_paths[i] for i in indices if i < len(all_paths)]
+    else:
+        selected_paths = all_paths
+    return [
+        {
+            'image': str(path),                                                         # the unlabeled volume file, 'imaging.nii.gz'
+            'label': str(path).replace("imaging.nii.gz", "segmentation_kidney.nii.gz"), # all the labeled data is named 'segmentation_kidney.nii.gz'
+            'id': path.parent.name                                                      # the dir name, e.g. 'case_00000'
+        }
+        for path in selected_paths
+    ]
+
 
 
 
