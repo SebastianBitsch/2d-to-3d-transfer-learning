@@ -93,15 +93,14 @@ def init_normal_per_channel(from_module: nn.Module, to_module: nn.Module) -> Non
             # This ungodly line takes the mean of the 2D conv (3,3) and then expands the single number into a 3D convolution, i.e. [32, 64] -> [32, 64, 3, 3, 3]
             # TODO: I cant find a nicer way than the triple unsqueeze, though i am sure there is a nicer / more general way of doing it
             mean = torch.mean(from_mod.weight.data, axis = (-1, -2)).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand(to_mod.weight.data.shape)
-            std  = torch.std(from_mod.weight.data, axis = (-1, -2), unbiased=False).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand(to_mod.weight.data.shape) # Unbiased to avoid /0 for single element tensors (last layer), see here: https://github.com/pytorch/pytorch/issues/29372
-        
-            # Handle Conv2D layers on the form [2, 32, 1, 1]. They have only 1 number so std is 'nan', replace with 0
-            std = torch.nan_to_num(std, nan = 0.0)
-
+            std  = torch.std(from_mod.weight.data, axis = (-1, -2), unbiased=False).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1).expand(to_mod.weight.data.shape) # Unbiased, see here: https://github.com/pytorch/pytorch/issues/29372
+            
             to_mod.weight.data = torch.normal(mean, std = std)
                         
         elif isinstance(from_mod, nn.LeakyReLU):
             to_mod.negative_slope = from_mod.negative_slope
 
         elif isinstance(from_mod, nn.InstanceNorm2d):
-            to_mod.weight.data = from_mod.weight.data
+            # TODO: This weight type is kinda weird, from_mod: torch.Size([32]) to_mod: torch.Size([32, 32, 3, 3, 3])
+            # Dont know how to handle that ...
+            pass
