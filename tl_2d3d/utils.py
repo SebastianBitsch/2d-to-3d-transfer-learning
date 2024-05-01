@@ -3,6 +3,7 @@ import random
 
 import torch
 import monai
+from monai.utils import set_determinism
 import medpy.metric as metric
 import numpy as np
 import torch.nn as nn
@@ -39,6 +40,7 @@ def set_seed(seed: int) -> None:
     np.random.seed(seed)
     monai.utils.misc.set_determinism(seed, use_deterministic_algorithms=True)
     torch.use_deterministic_algorithms(True)
+    set_determinism(seed = seed)
 
 
 def hd95(y:torch.Tensor, y_pred:torch.Tensor, config:DictConfig) -> float:
