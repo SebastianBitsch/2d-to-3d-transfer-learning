@@ -31,7 +31,7 @@ data:
   pct_test_split : 0.2 # of the full data set
 
 hyperparameters:
-  seed: 101
+  seed: 102
   batch_size: 4
   epochs: 200_000 # high number so training time is the limiting factor
   learning_rate: 1e-3
