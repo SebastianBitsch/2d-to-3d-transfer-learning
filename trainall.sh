@@ -44,24 +44,30 @@ source .env/bin/activate
 python3 tl_2d3d/train_model.py --config-name=baseline2d
 wait
 
-python3 tl_2d3d/train_model.py --config-name=notpretrained2d
+python3 tl_2d3d/train_model.py --config-name=finetune2d
 wait
 
-python3 tl_2d3d/train_model.py --config-name=finetune2d
+python3 tl_2d3d/train_model.py --config-name=notpretrained2d
 wait
 
 # 3D
 python3 tl_2d3d/train_model.py --config-name=baseline3d
 wait
 
-python3 tl_2d3d/train_model.py --config-name=notpretrained3d
+python3 tl_2d3d/train_model.py --config-name=finetune3d
 wait
 
-python3 tl_2d3d/train_model.py --config-name=finetune3d
+python3 tl_2d3d/train_model.py --config-name=notpretrained3d
 wait
 
 # Transfer learning
 python3 tl_2d3d/train_model.py --config-name=transfer2d3d
 wait
 
+python3 tl_2d3d/train_model.py --config-name=transfer2d3d_c
+wait
+
 python3 tl_2d3d/train_model.py --config-name=transfer2d3d_highlr
+wait
+
+python3 tl_2d3d/train_model.py --config-name=transfer2d3d_c_highlr

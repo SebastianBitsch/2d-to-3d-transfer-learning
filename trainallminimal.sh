@@ -40,8 +40,18 @@
 # Setup env
 source .env/bin/activate
 
+# 2D
+python3 tl_2d3d/train_model.py --config-name=baseline2d
+wait
+
 # Transfer learning
+python3 tl_2d3d/train_model.py --config-name=transfer2d3d
+wait
+
 python3 tl_2d3d/train_model.py --config-name=transfer2d3d_c
+wait
+
+python3 tl_2d3d/train_model.py --config-name=transfer2d3d_highlr
 wait
 
 python3 tl_2d3d/train_model.py --config-name=transfer2d3d_c_highlr
